@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { NotificationContext } from '../App';
 
 const StatisticsPage = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('semester');
   const [selectedSubject, setSelectedSubject] = useState('all');
+  const { showNotification } = useContext(NotificationContext);
 
   // Mock data - In a real app, this would come from an API
   const performanceData = {
@@ -21,6 +23,19 @@ const StatisticsPage = () => {
     ],
   };
 
+  const handlePeriodChange = (period) => {
+    setSelectedPeriod(period);
+    showNotification(`Showing statistics for ${period}`, 'info');
+  };
+
+  const handleSubjectChange = (subject) => {
+    setSelectedSubject(subject);
+    const message = subject === 'all' 
+      ? 'Showing statistics for all subjects'
+      : `Showing statistics for ${subject}`;
+    showNotification(message, 'info');
+  };
+
   const getGradeColor = (grade) => {
     if (grade >= 90) return 'text-green-600';
     if (grade >= 80) return 'text-blue-600';
@@ -37,7 +52,7 @@ const StatisticsPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Header Section */}
+      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-4">Academic Statistics</h1>
         <p className="text-gray-600">
@@ -55,8 +70,8 @@ const StatisticsPage = () => {
             </label>
             <select
               value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="input"
+              onChange={(e) => handlePeriodChange(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="week">This Week</option>
               <option value="month">This Month</option>
@@ -72,8 +87,8 @@ const StatisticsPage = () => {
             </label>
             <select
               value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              className="input"
+              onChange={(e) => handleSubjectChange(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="all">All Subjects</option>
               {performanceData.subjects.map((subject) => (
@@ -137,27 +152,29 @@ const StatisticsPage = () => {
       <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-800 mb-6">Subject Performance</h2>
         <div className="space-y-6">
-          {performanceData.subjects.map((subject) => (
-            <div key={subject.name} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium text-gray-800">{subject.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    {subject.completed} of {subject.assignments} assignments completed
-                  </p>
+          {performanceData.subjects
+            .filter(subject => selectedSubject === 'all' || subject.name.toLowerCase() === selectedSubject)
+            .map((subject) => (
+              <div key={subject.name} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-gray-800">{subject.name}</h3>
+                    <p className="text-sm text-gray-500">
+                      {subject.completed} of {subject.assignments} assignments completed
+                    </p>
+                  </div>
+                  <div className={`text-xl font-bold ${getGradeColor(subject.grade)}`}>
+                    {subject.grade}%
+                  </div>
                 </div>
-                <div className={`text-xl font-bold ${getGradeColor(subject.grade)}`}>
-                  {subject.grade}%
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full ${getProgressColor(subject.grade)} transition-all duration-500`}
+                    style={{ width: `${subject.grade}%` }}
+                  ></div>
                 </div>
               </div>
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className={`h-full ${getProgressColor(subject.grade)} transition-all duration-500`}
-                  style={{ width: `${subject.grade}%` }}
-                ></div>
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
 
@@ -175,21 +192,23 @@ const StatisticsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {performanceData.recentGrades.map((grade, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <td className="py-3 px-4">{grade.subject}</td>
-                  <td className="py-3 px-4">{grade.assignment}</td>
-                  <td className="py-3 px-4">
-                    <span className={`font-medium ${getGradeColor(grade.grade)}`}>
-                      {grade.grade}%
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-gray-500">{grade.date}</td>
-                </tr>
-              ))}
+              {performanceData.recentGrades
+                .filter(grade => selectedSubject === 'all' || grade.subject.toLowerCase() === selectedSubject)
+                .map((grade, index) => (
+                  <tr
+                    key={index}
+                    className="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200"
+                  >
+                    <td className="py-3 px-4">{grade.subject}</td>
+                    <td className="py-3 px-4">{grade.assignment}</td>
+                    <td className="py-3 px-4">
+                      <span className={`font-medium ${getGradeColor(grade.grade)}`}>
+                        {grade.grade}%
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-gray-500">{grade.date}</td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
