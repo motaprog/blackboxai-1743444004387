@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { NotificationContext } from '../App';
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('info');
   const [isEditing, setIsEditing] = useState(false);
+  const { showNotification } = useContext(NotificationContext);
 
   // Mock user data - In a real app, this would come from an API/backend
   const [userData, setUserData] = useState({
@@ -14,7 +16,6 @@ const ProfilePage = () => {
     phone: '+1 (555) 123-4567',
     address: '123 Student Lane, Education City, 12345',
     subjects: ['Mathematics', 'Physics', 'English', 'History'],
-    avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff',
   });
 
   const [formData, setFormData] = useState(userData);
@@ -31,7 +32,13 @@ const ProfilePage = () => {
     e.preventDefault();
     setUserData(formData);
     setIsEditing(false);
-    // Here you would typically make an API call to update the user data
+    showNotification('Profile updated successfully!', 'success');
+  };
+
+  const handleCancelEdit = () => {
+    setFormData(userData);
+    setIsEditing(false);
+    showNotification('Edit cancelled', 'info');
   };
 
   const stats = [
@@ -46,11 +53,9 @@ const ProfilePage = () => {
       {/* Profile Header */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
         <div className="flex flex-col md:flex-row items-center gap-6">
-          <img
-            src={userData.avatar}
-            alt={userData.name}
-            className="w-32 h-32 rounded-full border-4 border-blue-100"
-          />
+          <div className="w-32 h-32 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold">
+            {userData.name.split(' ').map(n => n[0]).join('')}
+          </div>
           <div className="flex-1 text-center md:text-left">
             <h1 className="text-2xl font-bold text-gray-800">{userData.name}</h1>
             <p className="text-gray-600">{userData.role} - {userData.grade}</p>
@@ -58,8 +63,13 @@ const ProfilePage = () => {
           </div>
           <div className="flex gap-3">
             <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="btn btn-primary"
+              onClick={() => {
+                setIsEditing(!isEditing);
+                if (!isEditing) {
+                  showNotification('You can now edit your profile', 'info');
+                }
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <i className="fas fa-edit mr-2"></i>
               {isEditing ? 'Cancel' : 'Edit Profile'}
@@ -107,48 +117,56 @@ const ProfilePage = () => {
           {activeTab === 'info' && (
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="form-group">
-                  <label className="label">Full Name</label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Name
+                  </label>
                   <input
                     type="text"
                     name="name"
                     value={isEditing ? formData.name : userData.name}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="input"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <div className="form-group">
-                  <label className="label">Email</label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email
+                  </label>
                   <input
                     type="email"
                     name="email"
                     value={isEditing ? formData.email : userData.email}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="input"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <div className="form-group">
-                  <label className="label">Phone</label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone
+                  </label>
                   <input
                     type="tel"
                     name="phone"
                     value={isEditing ? formData.phone : userData.phone}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="input"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <div className="form-group">
-                  <label className="label">Address</label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Address
+                  </label>
                   <input
                     type="text"
                     name="address"
                     value={isEditing ? formData.address : userData.address}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="input"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -156,15 +174,15 @@ const ProfilePage = () => {
                 <div className="mt-6 flex justify-end gap-3">
                   <button
                     type="button"
-                    onClick={() => {
-                      setFormData(userData);
-                      setIsEditing(false);
-                    }}
-                    className="btn btn-secondary"
+                    onClick={handleCancelEdit}
+                    className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
                     Save Changes
                   </button>
                 </div>
