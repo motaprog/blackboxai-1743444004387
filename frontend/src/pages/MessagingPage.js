@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { NotificationContext } from '../App';
 
 const MessagingPage = () => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const { showNotification } = useContext(NotificationContext);
 
   // Mock data - In a real app, this would come from an API
   const chats = [
@@ -11,8 +13,8 @@ const MessagingPage = () => {
       id: 1,
       name: 'Dr. Sarah Johnson',
       role: 'Mathematics Teacher',
-      avatar: 'https://ui-avatars.com/api/?name=Sarah+Johnson&background=6366F1&color=fff',
-      lastMessage: 'Don\'t forget about tomorrow\'s test!',
+      avatar: 'SJ',
+      lastMessage: "Don't forget about tomorrow's test!",
       timestamp: '10:30 AM',
       unread: 2,
       online: true,
@@ -21,8 +23,8 @@ const MessagingPage = () => {
       id: 2,
       name: 'Physics Study Group',
       role: 'Group Chat',
-      avatar: 'https://ui-avatars.com/api/?name=Physics+Group&background=10B981&color=fff',
-      lastMessage: 'Can someone explain Newton\'s third law?',
+      avatar: 'PG',
+      lastMessage: "Can someone explain Newton's third law?",
       timestamp: 'Yesterday',
       unread: 0,
       online: false,
@@ -31,7 +33,7 @@ const MessagingPage = () => {
       id: 3,
       name: 'Prof. Michael Chen',
       role: 'Physics Teacher',
-      avatar: 'https://ui-avatars.com/api/?name=Michael+Chen&background=EF4444&color=fff',
+      avatar: 'MC',
       lastMessage: 'Great work on your last assignment!',
       timestamp: 'Yesterday',
       unread: 0,
@@ -39,8 +41,7 @@ const MessagingPage = () => {
     },
   ];
 
-  // Mock messages for selected chat
-  const messages = [
+  const messages = selectedChat?.id === 1 ? [
     {
       id: 1,
       sender: 'Dr. Sarah Johnson',
@@ -51,32 +52,18 @@ const MessagingPage = () => {
     {
       id: 2,
       sender: 'You',
-      content: 'Hi Dr. Johnson! I\'m working on it now. I have a question about problem #3.',
+      content: "Hi Dr. Johnson! I'm working on it now. I have a question about problem #3.",
       timestamp: '10:15 AM',
       isSender: true,
     },
     {
       id: 3,
       sender: 'Dr. Sarah Johnson',
-      content: 'Sure, what\'s your question?',
+      content: "Sure, what's your question?",
       timestamp: '10:20 AM',
       isSender: false,
     },
-    {
-      id: 4,
-      sender: 'You',
-      content: 'I\'m not sure how to approach solving the quadratic equation in this context.',
-      timestamp: '10:25 AM',
-      isSender: true,
-    },
-    {
-      id: 5,
-      sender: 'Dr. Sarah Johnson',
-      content: 'Don\'t forget about tomorrow\'s test!',
-      timestamp: '10:30 AM',
-      isSender: false,
-    },
-  ];
+  ] : [];
 
   const filteredChats = chats.filter(chat =>
     chat.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -86,9 +73,15 @@ const MessagingPage = () => {
     e.preventDefault();
     if (!newMessage.trim()) return;
     
-    // Here you would typically make an API call to send the message
-    console.log('Sending message:', newMessage);
+    showNotification('Message sent successfully', 'success');
     setNewMessage('');
+  };
+
+  const handleChatSelect = (chat) => {
+    setSelectedChat(chat);
+    if (chat.unread > 0) {
+      showNotification(`${chat.unread} new message${chat.unread > 1 ? 's' : ''} from ${chat.name}`, 'info');
+    }
   };
 
   return (
@@ -105,7 +98,7 @@ const MessagingPage = () => {
                   placeholder="Search conversations..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="input pl-10"
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
               </div>
@@ -116,18 +109,16 @@ const MessagingPage = () => {
               {filteredChats.map((chat) => (
                 <div
                   key={chat.id}
-                  onClick={() => setSelectedChat(chat)}
+                  onClick={() => handleChatSelect(chat)}
                   className={`p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors duration-200 ${
                     selectedChat?.id === chat.id ? 'bg-blue-50' : ''
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <img
-                        src={chat.avatar}
-                        alt={chat.name}
-                        className="w-12 h-12 rounded-full"
-                      />
+                      <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
+                        {chat.avatar}
+                      </div>
                       {chat.online && (
                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                       )}
@@ -167,11 +158,9 @@ const MessagingPage = () => {
               {/* Chat Header */}
               <div className="p-4 border-b border-gray-200 bg-white">
                 <div className="flex items-center gap-3">
-                  <img
-                    src={selectedChat.avatar}
-                    alt={selectedChat.name}
-                    className="w-10 h-10 rounded-full"
-                  />
+                  <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
+                    {selectedChat.avatar}
+                  </div>
                   <div>
                     <h3 className="font-semibold text-gray-800">
                       {selectedChat.name}
@@ -214,9 +203,12 @@ const MessagingPage = () => {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type your message..."
-                    className="input flex-1"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
-                  <button type="submit" className="btn btn-primary">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
                     <i className="fas fa-paper-plane"></i>
                   </button>
                 </form>
