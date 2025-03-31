@@ -1,128 +1,96 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { NotificationContext } from '../App';
 
 const HomePage = () => {
+  const { showNotification } = useContext(NotificationContext);
+
   const features = [
     {
       icon: 'fa-book',
       title: 'Digital Learning',
-      description: 'Access lessons and educational materials anytime, anywhere.',
+      description: 'Access course materials and resources anytime, anywhere',
+      color: 'text-blue-600',
     },
     {
       icon: 'fa-tasks',
       title: 'Assignment Management',
-      description: 'Submit and track assignments with ease.',
+      description: 'Submit and track your assignments with ease',
+      color: 'text-green-600',
+    },
+    {
+      icon: 'fa-chart-line',
+      title: 'Progress Tracking',
+      description: 'Monitor your academic performance in real-time',
+      color: 'text-purple-600',
     },
     {
       icon: 'fa-comments',
       title: 'Communication',
-      description: 'Stay connected with teachers and classmates.',
-    },
-    {
-      icon: 'fa-calendar-check',
-      title: 'Event Planning',
-      description: 'Keep track of important dates and school events.',
+      description: 'Stay connected with teachers and classmates',
+      color: 'text-yellow-600',
     },
   ];
 
-  const stats = [
-    { number: '1000+', label: 'Students' },
-    { number: '100+', label: 'Teachers' },
-    { number: '50+', label: 'Courses' },
-    { number: '95%', label: 'Success Rate' },
-  ];
+  const handleStartLearning = () => {
+    showNotification('Welcome to MySchool! Start exploring your courses.', 'success');
+  };
 
   return (
-    <div className="space-y-16">
+    <div className="max-w-7xl mx-auto">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-blue-600 to-blue-400 rounded-3xl overflow-hidden">
-        <div className="absolute inset-0 bg-grid-white/15 bg-grid-16"></div>
-        <div className="relative container mx-auto px-6 py-16 md:py-24">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Welcome to MySchool Management System
-            </h1>
-            <p className="text-xl text-blue-100 mb-8">
-              Streamline your educational journey with our comprehensive school management platform.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Link
-                to="/lessons"
-                className="px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200"
-              >
-                Start Learning
-              </Link>
-              <Link
-                to="/profile"
-                className="px-6 py-3 bg-blue-700 text-white rounded-lg font-semibold hover:bg-blue-800 transition-colors duration-200"
-              >
-                View Profile
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-12">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
-          Why Choose MySchool?
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300"
-            >
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <i className={`fas ${feature.icon} text-blue-600 text-2xl`}></i>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                {feature.title}
-              </h3>
-              <p className="text-gray-600">
-                {feature.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="bg-gray-50 rounded-3xl py-16">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {stats.map((stat, index) => (
-              <div key={index} className="space-y-2">
-                <div className="text-4xl font-bold text-blue-600">
-                  {stat.number}
-                </div>
-                <div className="text-gray-600 font-medium">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="bg-gray-900 rounded-3xl text-center py-16">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to Get Started?
-          </h2>
-          <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
-            Join our community of learners and educators to experience a new way of managing education.
-          </p>
-          <Link
-            to="/profile"
-            className="inline-block px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200"
+      <div className="text-center mb-16">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
+          Welcome to MySchool Management System
+        </h1>
+        <p className="text-xl text-gray-600 mb-8">
+          Streamline your educational journey with our comprehensive school
+          management platform.
+        </p>
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={handleStartLearning}
+            className="btn btn-primary"
           >
-            Create Your Account
+            Start Learning
+          </button>
+          <Link to="/profile" className="btn btn-secondary">
+            View Profile
           </Link>
         </div>
-      </section>
+      </div>
+
+      {/* Features Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+        {features.map((feature, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300"
+          >
+            <div className={`text-3xl ${feature.color} mb-4`}>
+              <i className={`fas ${feature.icon}`}></i>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              {feature.title}
+            </h3>
+            <p className="text-gray-600">{feature.description}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Call to Action */}
+      <div className="bg-blue-600 text-white rounded-xl p-8 text-center">
+        <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+        <p className="text-xl mb-6">
+          Join our learning community and enhance your educational journey
+        </p>
+        <Link
+          to="/lessons"
+          className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+        >
+          Explore Courses
+        </Link>
+      </div>
     </div>
   );
 };
