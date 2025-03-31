@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { NotificationContext } from '../App';
 
 const AssignmentsPage = () => {
   const [activeTab, setActiveTab] = useState('pending');
   const [selectedSubject, setSelectedSubject] = useState('all');
+  const { showNotification } = useContext(NotificationContext);
 
-  // Mock data - In a real app, this would come from an API
   const assignments = [
     {
       id: 1,
@@ -13,9 +14,8 @@ const AssignmentsPage = () => {
       dueDate: '2024-02-20',
       status: 'pending',
       description: 'Complete exercises 1-10 from Chapter 3',
-      teacher: 'Dr. Sarah Johnson',
       points: 100,
-      submissionType: 'document',
+      teacher: 'Dr. Sarah Johnson',
     },
     {
       id: 2,
@@ -24,51 +24,40 @@ const AssignmentsPage = () => {
       dueDate: '2024-02-18',
       status: 'submitted',
       description: 'Write a detailed report on the pendulum experiment',
-      teacher: 'Prof. Michael Chen',
       points: 150,
-      submissionType: 'pdf',
-      submittedDate: '2024-02-17',
-      grade: 92,
+      teacher: 'Prof. Michael Chen',
     },
     {
       id: 3,
-      title: 'English Literature Essay',
+      title: 'Literature Essay',
       subject: 'English',
       dueDate: '2024-02-25',
       status: 'pending',
       description: 'Write a 1000-word essay on Shakespeare\'s Macbeth',
+      points: 100,
       teacher: 'Ms. Emily Brown',
-      points: 200,
-      submissionType: 'document',
     },
   ];
 
   const subjects = ['All Subjects', 'Mathematics', 'Physics', 'English', 'History', 'Chemistry'];
 
   const filteredAssignments = assignments.filter(assignment => {
-    const matchesSubject = selectedSubject === 'all' || 
-                          assignment.subject.toLowerCase() === selectedSubject.toLowerCase();
-    const matchesStatus = activeTab === 'all' || 
-                         assignment.status === activeTab;
-    return matchesSubject && matchesStatus;
+    const matchesStatus = activeTab === 'all' || assignment.status === activeTab;
+    const matchesSubject = selectedSubject === 'all' || assignment.subject === selectedSubject;
+    return matchesStatus && matchesSubject;
   });
 
-  const getStatusBadgeClass = (status) => {
-    switch (status) {
-      case 'pending':
-        return 'badge-warning';
-      case 'submitted':
-        return 'badge-success';
-      case 'late':
-        return 'badge-danger';
-      default:
-        return 'badge-info';
-    }
+  const handleSubmitAssignment = (assignmentId) => {
+    showNotification('Assignment submitted successfully!', 'success');
+  };
+
+  const handleDownloadInstructions = (assignmentId) => {
+    showNotification('Downloading assignment instructions...', 'info');
   };
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Header Section */}
+      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-4">Assignments</h1>
         <p className="text-gray-600">
@@ -76,9 +65,48 @@ const AssignmentsPage = () => {
         </p>
       </div>
 
-      {/* Filters and Tabs */}
+      {/* Filters */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
         <div className="flex flex-col md:flex-row gap-6">
+          {/* Status Filter */}
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Assignment Status
+            </label>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`px-4 py-2 rounded-lg ${
+                  activeTab === 'all'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setActiveTab('pending')}
+                className={`px-4 py-2 rounded-lg ${
+                  activeTab === 'pending'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Pending
+              </button>
+              <button
+                onClick={() => setActiveTab('submitted')}
+                className={`px-4 py-2 rounded-lg ${
+                  activeTab === 'submitted'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Submitted
+              </button>
+            </div>
+          </div>
+
           {/* Subject Filter */}
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -86,37 +114,15 @@ const AssignmentsPage = () => {
             </label>
             <select
               value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value.toLowerCase())}
-              className="input"
+              onChange={(e) => setSelectedSubject(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              {subjects.map((subject, index) => (
-                <option key={index} value={subject.toLowerCase()}>
+              {subjects.map((subject) => (
+                <option key={subject} value={subject === 'All Subjects' ? 'all' : subject}>
                   {subject}
                 </option>
               ))}
             </select>
-          </div>
-
-          {/* Status Tabs */}
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Assignment Status
-            </label>
-            <div className="flex rounded-lg border border-gray-200 p-1">
-              {['all', 'pending', 'submitted'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium capitalize transition-colors duration-200 ${
-                    activeTab === tab
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -128,72 +134,63 @@ const AssignmentsPage = () => {
             key={assignment.id}
             className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300"
           >
-            <div className="flex flex-col md:flex-row gap-6">
-              {/* Assignment Details */}
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className={`badge ${getStatusBadgeClass(assignment.status)}`}>
-                    {assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}
-                  </span>
-                  <span className="badge badge-info">
-                    {assignment.subject}
-                  </span>
-                </div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-gray-800">
+                {assignment.title}
+              </h3>
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  assignment.status === 'submitted'
+                    ? 'bg-green-100 text-green-600'
+                    : 'bg-yellow-100 text-yellow-600'
+                }`}
+              >
+                {assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}
+              </span>
+            </div>
 
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  {assignment.title}
-                </h3>
-
-                <p className="text-gray-600 mb-4">
-                  {assignment.description}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <p className="text-gray-600 mb-2">
+                  <i className="fas fa-book mr-2"></i>
+                  {assignment.subject}
                 </p>
-
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-500">
-                  <div className="flex items-center">
-                    <i className="fas fa-user-tie mr-2"></i>
-                    {assignment.teacher}
-                  </div>
-                  <div className="flex items-center">
-                    <i className="fas fa-calendar mr-2"></i>
-                    Due: {assignment.dueDate}
-                  </div>
-                  <div className="flex items-center">
-                    <i className="fas fa-star mr-2"></i>
-                    Points: {assignment.points}
-                  </div>
-                </div>
+                <p className="text-gray-600 mb-2">
+                  <i className="fas fa-user-tie mr-2"></i>
+                  {assignment.teacher}
+                </p>
               </div>
-
-              {/* Action Section */}
-              <div className="flex flex-col justify-center items-center md:items-end gap-4 min-w-[200px]">
-                {assignment.status === 'submitted' ? (
-                  <>
-                    <div className="text-center md:text-right">
-                      <div className="text-3xl font-bold text-green-600">
-                        {assignment.grade}%
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Submitted: {assignment.submittedDate}
-                      </div>
-                    </div>
-                    <button className="btn btn-secondary w-full md:w-auto">
-                      <i className="fas fa-eye mr-2"></i>
-                      View Submission
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button className="btn btn-primary w-full md:w-auto">
-                      <i className="fas fa-upload mr-2"></i>
-                      Submit Assignment
-                    </button>
-                    <button className="btn btn-secondary w-full md:w-auto">
-                      <i className="fas fa-download mr-2"></i>
-                      Download Instructions
-                    </button>
-                  </>
-                )}
+              <div>
+                <p className="text-gray-600 mb-2">
+                  <i className="fas fa-calendar mr-2"></i>
+                  Due: {assignment.dueDate}
+                </p>
+                <p className="text-gray-600 mb-2">
+                  <i className="fas fa-star mr-2"></i>
+                  Points: {assignment.points}
+                </p>
               </div>
+            </div>
+
+            <p className="text-gray-600 mb-6">{assignment.description}</p>
+
+            <div className="flex gap-4">
+              {assignment.status === 'pending' && (
+                <button
+                  onClick={() => handleSubmitAssignment(assignment.id)}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <i className="fas fa-upload mr-2"></i>
+                  Submit Assignment
+                </button>
+              )}
+              <button
+                onClick={() => handleDownloadInstructions(assignment.id)}
+                className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                <i className="fas fa-download mr-2"></i>
+                Download Instructions
+              </button>
             </div>
           </div>
         ))}
@@ -206,7 +203,11 @@ const AssignmentsPage = () => {
               No assignments found
             </h3>
             <p className="text-gray-600">
-              Try adjusting your filters to see more assignments
+              {activeTab === 'pending'
+                ? 'You have no pending assignments'
+                : activeTab === 'submitted'
+                ? 'You have not submitted any assignments yet'
+                : 'No assignments match your filters'}
             </p>
           </div>
         )}
