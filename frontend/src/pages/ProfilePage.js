@@ -1,261 +1,196 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { NotificationContext } from '../App';
+import React, { useState } from 'react';
 
 const ProfilePage = () => {
-  const { addNotification } = useContext(NotificationContext);
+  const [activeTab, setActiveTab] = useState('info');
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  // Mock user data - In real app, this would come from an API
+  // Mock user data - In a real app, this would come from an API/backend
   const [userData, setUserData] = useState({
-    name: 'أحمد محمد',
-    role: 'طالب',
-    grade: 'الصف العاشر',
-    email: 'ahmed@example.com',
-    phone: '0123456789',
-    avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150&h=150&fit=crop',
-    stats: {
-      assignments: 15,
-      completedAssignments: 12,
-      averageGrade: 85,
-      attendance: 95
-    }
+    name: 'John Doe',
+    role: 'Student',
+    email: 'john.doe@myschool.com',
+    grade: '10th Grade',
+    studentId: 'STU2024001',
+    phone: '+1 (555) 123-4567',
+    address: '123 Student Lane, Education City, 12345',
+    subjects: ['Mathematics', 'Physics', 'English', 'History'],
+    avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff',
   });
 
-  // Form state
   const [formData, setFormData] = useState(userData);
 
-  useEffect(() => {
-    // Simulate loading user data
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
-
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  // Handle form submission
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setUserData(formData);
-      setIsEditing(false);
-      addNotification('تم تحديث الملف الشخصي بنجاح', 'success');
-    } catch (error) {
-      addNotification('حدث خطأ أثناء تحديث الملف الشخصي', 'error');
-    } finally {
-      setLoading(false);
-    }
+    setUserData(formData);
+    setIsEditing(false);
+    // Here you would typically make an API call to update the user data
   };
 
-  // Handle photo upload
-  const handlePhotoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setUploadingPhoto(true);
-
-    try {
-      // Simulate file upload
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Create object URL for preview
-      const imageUrl = URL.createObjectURL(file);
-      setFormData(prev => ({ ...prev, avatar: imageUrl }));
-      addNotification('تم تحديث الصورة الشخصية بنجاح', 'success');
-    } catch (error) {
-      addNotification('حدث خطأ أثناء تحديث الصورة', 'error');
-    } finally {
-      setUploadingPhoto(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="loading-spinner"></div>
-      </div>
-    );
-  }
+  const stats = [
+    { label: 'Assignments Completed', value: '45/50' },
+    { label: 'Average Grade', value: '92%' },
+    { label: 'Attendance Rate', value: '95%' },
+    { label: 'Active Courses', value: '6' },
+  ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 py-8"
-    >
-      <div className="max-w-4xl mx-auto">
-        {/* Profile Header */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            {/* Profile Photo */}
-            <div className="relative">
-              <img
-                src={formData.avatar}
-                alt="Profile"
-                className="w-32 h-32 rounded-full object-cover border-4 border-blue-500"
-              />
-              <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-600 transition-colors">
-                <i className="fas fa-camera"></i>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handlePhotoUpload}
-                  disabled={uploadingPhoto}
-                />
-              </label>
-              {uploadingPhoto && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
-                  <div className="loading-spinner"></div>
-                </div>
-              )}
-            </div>
-
-            {/* Profile Info */}
-            <div className="flex-grow text-center md:text-right">
-              <h1 className="text-3xl font-bold mb-2">{userData.name}</h1>
-              <p className="text-gray-600 mb-2">{userData.role} - {userData.grade}</p>
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                <i className="fas fa-edit ml-2"></i>
-                {isEditing ? 'إلغاء التعديل' : 'تعديل الملف الشخصي'}
-              </button>
-            </div>
+    <div className="max-w-4xl mx-auto">
+      {/* Profile Header */}
+      <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          <img
+            src={userData.avatar}
+            alt={userData.name}
+            className="w-32 h-32 rounded-full border-4 border-blue-100"
+          />
+          <div className="flex-1 text-center md:text-left">
+            <h1 className="text-2xl font-bold text-gray-800">{userData.name}</h1>
+            <p className="text-gray-600">{userData.role} - {userData.grade}</p>
+            <p className="text-gray-500 text-sm">ID: {userData.studentId}</p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className="btn btn-primary"
+            >
+              <i className="fas fa-edit mr-2"></i>
+              {isEditing ? 'Cancel' : 'Edit Profile'}
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="bg-white rounded-lg shadow p-6 text-center"
-          >
-            <i className="fas fa-tasks text-3xl text-blue-500 mb-4"></i>
-            <h3 className="text-lg font-semibold mb-2">الواجبات</h3>
-            <p className="text-2xl font-bold text-gray-800">
-              {userData.stats.completedAssignments}/{userData.stats.assignments}
-            </p>
-          </motion.div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {stats.map((stat, index) => (
+          <div key={index} className="bg-white rounded-xl shadow-lg p-4 text-center">
+            <h3 className="text-gray-500 text-sm">{stat.label}</h3>
+            <p className="text-2xl font-bold text-blue-600">{stat.value}</p>
+          </div>
+        ))}
+      </div>
 
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="bg-white rounded-lg shadow p-6 text-center"
+      {/* Tabs */}
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="flex border-b">
+          <button
+            className={`flex-1 py-4 px-6 text-center ${
+              activeTab === 'info'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setActiveTab('info')}
           >
-            <i className="fas fa-chart-line text-3xl text-green-500 mb-4"></i>
-            <h3 className="text-lg font-semibold mb-2">المعدل</h3>
-            <p className="text-2xl font-bold text-gray-800">{userData.stats.averageGrade}%</p>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="bg-white rounded-lg shadow p-6 text-center"
+            Personal Information
+          </button>
+          <button
+            className={`flex-1 py-4 px-6 text-center ${
+              activeTab === 'academic'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setActiveTab('academic')}
           >
-            <i className="fas fa-calendar-check text-3xl text-purple-500 mb-4"></i>
-            <h3 className="text-lg font-semibold mb-2">الحضور</h3>
-            <p className="text-2xl font-bold text-gray-800">{userData.stats.attendance}%</p>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="bg-white rounded-lg shadow p-6 text-center"
-          >
-            <i className="fas fa-star text-3xl text-yellow-500 mb-4"></i>
-            <h3 className="text-lg font-semibold mb-2">التقييم</h3>
-            <p className="text-2xl font-bold text-gray-800">ممتاز</p>
-          </motion.div>
+            Academic Details
+          </button>
         </div>
 
-        {/* Edit Form */}
-        {isEditing && (
-          <motion.form
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-lg shadow-lg p-6"
-            onSubmit={handleSubmit}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">الاسم</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+        <div className="p-6">
+          {activeTab === 'info' && (
+            <form onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="form-group">
+                  <label className="label">Full Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={isEditing ? formData.name : userData.name}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    className="input"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="label">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={isEditing ? formData.email : userData.email}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    className="input"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="label">Phone</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={isEditing ? formData.phone : userData.phone}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    className="input"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="label">Address</label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={isEditing ? formData.address : userData.address}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    className="input"
+                  />
+                </div>
               </div>
+              {isEditing && (
+                <div className="mt-6 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(userData);
+                      setIsEditing(false);
+                    }}
+                    className="btn btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary">
+                    Save Changes
+                  </button>
+                </div>
+              )}
+            </form>
+          )}
 
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">البريد الإلكتروني</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">رقم الهاتف</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">الصف</label>
-                <input
-                  type="text"
-                  name="grade"
-                  value={formData.grade}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+          {activeTab === 'academic' && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Enrolled Subjects</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {userData.subjects.map((subject, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-50 rounded-lg p-4 flex items-center gap-3"
+                  >
+                    <i className="fas fa-book text-blue-600"></i>
+                    <span>{subject}</span>
+                  </div>
+                ))}
               </div>
             </div>
-
-            <div className="flex justify-end mt-6 gap-4">
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="px-6 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-              >
-                إلغاء
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
-              >
-                حفظ التغييرات
-              </button>
-            </div>
-          </motion.form>
-        )}
+          )}
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
