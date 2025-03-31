@@ -1,25 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="School Management System - Streamline your educational processes" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MySchool - School Management System</title>
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-  </body>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root">
+        <div class="min-h-screen flex flex-col">
+            <!-- Navigation -->
+            <nav class="bg-white shadow-lg">
+                <div class="container mx-auto px-4">
+                    <div class="flex justify-between items-center h-16">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-school text-blue-600 text-2xl"></i>
+                            <span class="font-bold text-xl text-gray-800">MySchool</span>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="flex-grow container mx-auto px-4 py-8">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h1 class="text-4xl font-bold text-gray-800 mb-6">Welcome to MySchool</h1>
+                    <p class="text-xl text-gray-600 mb-8">Your comprehensive school management system</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <i class="fas fa-book text-3xl text-blue-600 mb-4"></i>
+                            <h2 class="text-xl font-semibold mb-2">Course Management</h2>
+                            <p class="text-gray-600">Access your courses, assignments, and study materials</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <i class="fas fa-chart-line text-3xl text-green-600 mb-4"></i>
+                            <h2 class="text-xl font-semibold mb-2">Performance Tracking</h2>
+                            <p class="text-gray-600">Monitor your academic progress and achievements</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-600 text-white rounded-xl p-8">
+                        <h2 class="text-2xl font-bold mb-4">Get Started Today</h2>
+                        <p class="mb-6">Join our learning community and enhance your educational journey</p>
+                        <button class="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
+                            Learn More
+                        </button>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer class="bg-white shadow-lg mt-auto">
+                <div class="container mx-auto px-4 py-6">
+                    <p class="text-center text-gray-600">
+                        © 2024 MySchool. All rights reserved.
+                    </p>
+                </div>
+            </footer>
+        </div>
+    </div>
+</body>
 </html>
