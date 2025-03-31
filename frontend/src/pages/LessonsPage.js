@@ -1,63 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { NotificationContext } from '../App';
 
 const LessonsPage = () => {
   const [selectedSubject, setSelectedSubject] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const { showNotification } = useContext(NotificationContext);
 
   // Mock data - In a real app, this would come from an API
-  const subjects = [
-    'All Subjects',
-    'Mathematics',
-    'Physics',
-    'Chemistry',
-    'Biology',
-    'English',
-    'History',
-  ];
-
   const lessons = [
     {
       id: 1,
       title: 'Introduction to Algebra',
       subject: 'Mathematics',
-      teacher: 'Dr. Sarah Johnson',
+      description: 'Learn the basics of algebraic expressions and equations',
       duration: '45 minutes',
+      image: 'algebra.jpg',
       level: 'Intermediate',
-      description: 'Learn the fundamentals of algebraic expressions and equations.',
-      thumbnail: 'https://via.placeholder.com/300x200',
-      date: '2024-02-15',
     },
     {
       id: 2,
-      title: 'Newton\'s Laws of Motion',
+      title: "Newton's Laws of Motion",
       subject: 'Physics',
-      teacher: 'Prof. Michael Chen',
+      description: 'Understanding the fundamental laws of motion',
       duration: '60 minutes',
+      image: 'physics.jpg',
       level: 'Advanced',
-      description: 'Comprehensive study of Newton\'s three laws of motion with practical examples.',
-      thumbnail: 'https://via.placeholder.com/300x200',
-      date: '2024-02-16',
     },
     {
       id: 3,
-      title: 'Cell Biology Basics',
-      subject: 'Biology',
-      teacher: 'Dr. Emily Brown',
+      title: 'Chemical Reactions',
+      subject: 'Chemistry',
+      description: 'Explore different types of chemical reactions',
       duration: '50 minutes',
-      level: 'Beginner',
-      description: 'Introduction to cell structure and functions.',
-      thumbnail: 'https://via.placeholder.com/300x200',
-      date: '2024-02-17',
+      image: 'chemistry.jpg',
+      level: 'Intermediate',
     },
-    // Add more mock lessons as needed
+    {
+      id: 4,
+      title: 'Essay Writing',
+      subject: 'English',
+      description: 'Master the art of writing compelling essays',
+      duration: '45 minutes',
+      image: 'english.jpg',
+      level: 'All Levels',
+    },
   ];
 
-  const filteredLessons = lessons.filter(lesson => {
-    const matchesSubject = selectedSubject === 'all' || lesson.subject.toLowerCase() === selectedSubject.toLowerCase();
-    const matchesSearch = lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         lesson.description.toLowerCase().includes(searchQuery.toLowerCase());
+  const subjects = ['All Subjects', 'Mathematics', 'Physics', 'Chemistry', 'English'];
+
+  const filteredLessons = lessons.filter((lesson) => {
+    const matchesSubject =
+      selectedSubject.toLowerCase() === 'all' ||
+      lesson.subject.toLowerCase() === selectedSubject.toLowerCase();
+    
+    const matchesSearch = lesson.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase()) ||
+      lesson.description.toLowerCase().includes(searchQuery.toLowerCase());
+
     return matchesSubject && matchesSearch;
   });
+
+  const handleStartLesson = (lesson) => {
+    showNotification(`Starting lesson: ${lesson.title}`, 'info');
+  };
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -69,9 +75,9 @@ const LessonsPage = () => {
         </p>
       </div>
 
-      {/* Filters and Search */}
+      {/* Filters */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:flex-row gap-6">
           {/* Subject Filter */}
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -80,17 +86,17 @@ const LessonsPage = () => {
             <select
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value.toLowerCase())}
-              className="input"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              {subjects.map((subject, index) => (
-                <option key={index} value={subject.toLowerCase()}>
+              {subjects.map((subject) => (
+                <option key={subject} value={subject.toLowerCase()}>
                   {subject}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Search Bar */}
+          {/* Search */}
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Search Lessons
@@ -101,9 +107,9 @@ const LessonsPage = () => {
                 placeholder="Search by title or description..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="input pl-10"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
-              <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <i className="fas fa-search absolute right-3 top-3 text-gray-400"></i>
             </div>
           </div>
         </div>
@@ -112,57 +118,37 @@ const LessonsPage = () => {
       {/* Lessons Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredLessons.map((lesson) => (
-          <div key={lesson.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-            {/* Lesson Thumbnail */}
-            <img
-              src={lesson.thumbnail}
-              alt={lesson.title}
-              className="w-full h-48 object-cover"
-            />
-
-            {/* Lesson Content */}
+          <div
+            key={lesson.id}
+            className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+          >
+            <div className="aspect-video bg-gray-100 flex items-center justify-center">
+              <i className="fas fa-play-circle text-4xl text-gray-400"></i>
+            </div>
             <div className="p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="badge badge-info">
+              <div className="flex items-center justify-between mb-4">
+                <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">
                   {lesson.subject}
                 </span>
-                <span className="badge badge-success">
-                  {lesson.level}
+                <span className="text-gray-500 text-sm">
+                  <i className="fas fa-clock mr-2"></i>
+                  {lesson.duration}
                 </span>
               </div>
-
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
                 {lesson.title}
               </h3>
-
-              <p className="text-gray-600 text-sm mb-4">
-                {lesson.description}
-              </p>
-
-              <div className="flex items-center text-gray-500 text-sm mb-4">
-                <i className="fas fa-user-tie mr-2"></i>
-                {lesson.teacher}
-              </div>
-
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <div className="flex items-center">
-                  <i className="fas fa-clock mr-2"></i>
-                  {lesson.duration}
-                </div>
-                <div className="flex items-center">
-                  <i className="fas fa-calendar mr-2"></i>
-                  {lesson.date}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="mt-6 flex gap-3">
-                <button className="btn btn-primary flex-1">
-                  <i className="fas fa-play mr-2"></i>
+              <p className="text-gray-600 mb-4">{lesson.description}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">
+                  <i className="fas fa-signal mr-2"></i>
+                  {lesson.level}
+                </span>
+                <button
+                  onClick={() => handleStartLesson(lesson)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
                   Start Lesson
-                </button>
-                <button className="btn btn-secondary">
-                  <i className="fas fa-download"></i>
                 </button>
               </div>
             </div>
@@ -178,7 +164,7 @@ const LessonsPage = () => {
             No lessons found
           </h3>
           <p className="text-gray-600">
-            Try adjusting your search or filter criteria
+            Try adjusting your filters or search query
           </p>
         </div>
       )}
