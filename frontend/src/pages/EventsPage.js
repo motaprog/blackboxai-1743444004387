@@ -1,431 +1,274 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { NotificationContext } from '../App';
+import React, { useState } from 'react';
 
 const EventsPage = () => {
-  const { addNotification } = useContext(NotificationContext);
-  const [loading, setLoading] = useState(true);
-  const [showEventModal, setShowEventModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [view, setView] = useState('month'); // 'month', 'week', 'list'
+  const [selectedView, setSelectedView] = useState('calendar');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  // Mock events data
-  const [events, setEvents] = useState([
+  // Mock data - In a real app, this would come from an API
+  const events = [
     {
       id: 1,
-      title: 'اجتماع أولياء الأمور',
-      description: 'مناقشة نتائج الفصل الدراسي الأول',
-      date: '2024-01-20',
-      time: '14:00',
-      location: 'القاعة الرئيسية',
-      type: 'meeting',
-      color: 'blue',
+      title: 'Math Competition',
+      date: '2024-02-15',
+      time: '09:00 AM',
+      location: 'School Auditorium',
+      type: 'competition',
+      description: 'Annual mathematics competition for all grades',
+      organizer: 'Mathematics Department',
     },
     {
       id: 2,
-      title: 'امتحان الرياضيات',
-      description: 'امتحان نصف الفصل في مادة الرياضيات',
-      date: '2024-01-25',
-      time: '09:00',
-      location: 'قاعة الامتحانات',
-      type: 'exam',
-      color: 'red',
+      title: 'Parent-Teacher Meeting',
+      date: '2024-02-20',
+      time: '02:00 PM',
+      location: 'Main Hall',
+      type: 'meeting',
+      description: 'Semester progress discussion with parents',
+      organizer: 'School Administration',
     },
     {
       id: 3,
-      title: 'نشاط رياضي',
-      description: 'بطولة كرة القدم المدرسية',
-      date: '2024-01-28',
-      time: '15:30',
-      location: 'الملعب الرياضي',
-      type: 'activity',
-      color: 'green',
+      title: 'Science Fair',
+      date: '2024-02-25',
+      time: '10:00 AM',
+      location: 'School Grounds',
+      type: 'exhibition',
+      description: 'Annual science project exhibition',
+      organizer: 'Science Department',
     },
-  ]);
+  ];
 
-  // Event type configurations
-  const eventTypes = {
-    meeting: { icon: 'fas fa-users', color: 'blue' },
-    exam: { icon: 'fas fa-file-alt', color: 'red' },
-    activity: { icon: 'fas fa-running', color: 'green' },
-    holiday: { icon: 'fas fa-calendar', color: 'purple' },
+  const getEventTypeColor = (type) => {
+    switch (type) {
+      case 'competition':
+        return 'bg-blue-100 text-blue-800';
+      case 'meeting':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'exhibition':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
-  useEffect(() => {
-    // Simulate loading events
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
 
   // Generate calendar days
+  const getDaysInMonth = (month, year) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (month, year) => {
+    return new Date(year, month, 1).getDay();
+  };
+
   const generateCalendarDays = () => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = getDaysInMonth(selectedMonth, selectedYear);
+    const firstDay = getFirstDayOfMonth(selectedMonth, selectedYear);
     const days = [];
 
-    // Add previous month's days
-    const firstDayOfWeek = firstDay.getDay();
-    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-      const day = new Date(year, month, -i);
-      days.push({
-        date: day,
-        isCurrentMonth: false,
-        events: events.filter(event => event.date === day.toISOString().split('T')[0]),
-      });
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < firstDay; i++) {
+      days.push(null);
     }
 
-    // Add current month's days
-    for (let i = 1; i <= lastDay.getDate(); i++) {
-      const day = new Date(year, month, i);
-      days.push({
-        date: day,
-        isCurrentMonth: true,
-        events: events.filter(event => event.date === day.toISOString().split('T')[0]),
-      });
-    }
-
-    // Add next month's days to complete the grid
-    const remainingDays = 42 - days.length; // 6 rows × 7 days
-    for (let i = 1; i <= remainingDays; i++) {
-      const day = new Date(year, month + 1, i);
-      days.push({
-        date: day,
-        isCurrentMonth: false,
-        events: events.filter(event => event.date === day.toISOString().split('T')[0]),
-      });
+    // Add days of the month
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push(i);
     }
 
     return days;
   };
 
-  // Handle event creation/update
-  const handleEventSubmit = (eventData) => {
-    const newEvent = {
-      id: selectedEvent ? selectedEvent.id : Date.now(),
-      ...eventData,
-    };
-
-    if (selectedEvent) {
-      // Update existing event
-      setEvents(prev => prev.map(event => 
-        event.id === selectedEvent.id ? newEvent : event
-      ));
-      addNotification('تم تحديث الحدث بنجاح', 'success');
-    } else {
-      // Create new event
-      setEvents(prev => [...prev, newEvent]);
-      addNotification('تم إنشاء الحدث بنجاح', 'success');
-    }
-
-    setShowEventModal(false);
-    setSelectedEvent(null);
-  };
-
-  // Handle event deletion
-  const handleEventDelete = (eventId) => {
-    setEvents(prev => prev.filter(event => event.id !== eventId));
-    addNotification('تم حذف الحدث بنجاح', 'success');
-    setShowEventModal(false);
-    setSelectedEvent(null);
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="loading-spinner"></div>
-      </div>
-    );
-  }
+  const calendarDays = generateCalendarDays();
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="container mx-auto px-4 py-8"
-    >
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">التقويم المدرسي</h1>
-          <p className="text-gray-600">
-            {currentMonth.toLocaleDateString('ar-SA', { month: 'long', year: 'numeric' })}
-          </p>
-        </div>
-
-        <div className="flex gap-4">
-          {/* View Toggle */}
-          <div className="flex rounded-lg border overflow-hidden">
-            {['month', 'week', 'list'].map((viewType) => (
-              <button
-                key={viewType}
-                onClick={() => setView(viewType)}
-                className={`px-4 py-2 ${
-                  view === viewType
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                <i className={`fas fa-${
-                  viewType === 'month' ? 'calendar-alt' :
-                  viewType === 'week' ? 'calendar-week' : 'list'
-                } mr-2`}></i>
-                {viewType === 'month' ? 'شهري' :
-                 viewType === 'week' ? 'أسبوعي' : 'قائمة'}
-              </button>
-            ))}
-          </div>
-
-          {/* Navigation */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() - 1)))}
-              className="p-2 rounded-lg border hover:bg-gray-50"
-            >
-              <i className="fas fa-chevron-right"></i>
-            </button>
-            <button
-              onClick={() => setCurrentMonth(new Date())}
-              className="p-2 rounded-lg border hover:bg-gray-50"
-            >
-              اليوم
-            </button>
-            <button
-              onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() + 1)))}
-              className="p-2 rounded-lg border hover:bg-gray-50"
-            >
-              <i className="fas fa-chevron-left"></i>
-            </button>
-          </div>
-
-          {/* Add Event Button */}
-          <button
-            onClick={() => {
-              setSelectedEvent(null);
-              setShowEventModal(true);
-            }}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            <i className="fas fa-plus mr-2"></i>
-            حدث جديد
-          </button>
-        </div>
+    <div className="max-w-7xl mx-auto">
+      {/* Header Section */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">School Events</h1>
+        <p className="text-gray-600">
+          Stay updated with all school activities and important dates.
+        </p>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* Weekday Headers */}
-        <div className="grid grid-cols-7 gap-px bg-gray-200 text-center">
-          {['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'].map(day => (
-            <div key={day} className="bg-gray-50 py-2 font-semibold">
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* Calendar Days */}
-        <div className="grid grid-cols-7 gap-px bg-gray-200">
-          {generateCalendarDays().map((day, index) => (
-            <div
-              key={index}
-              className={`min-h-[120px] bg-white p-2 ${
-                !day.isCurrentMonth ? 'text-gray-400' : ''
-              } ${
-                day.date.toDateString() === new Date().toDateString()
-                  ? 'bg-blue-50'
-                  : ''
+      {/* View Toggle and Month Selection */}
+      <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
+          {/* View Toggle */}
+          <div className="flex rounded-lg border border-gray-200 p-1">
+            <button
+              onClick={() => setSelectedView('calendar')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                selectedView === 'calendar'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-semibold">
-                  {day.date.getDate()}
-                </span>
-                {day.events.length > 0 && (
-                  <span className="text-xs text-gray-500">
-                    {day.events.length} أحداث
-                  </span>
-                )}
-              </div>
+              <i className="fas fa-calendar-alt mr-2"></i>
+              Calendar View
+            </button>
+            <button
+              onClick={() => setSelectedView('list')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                selectedView === 'list'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <i className="fas fa-list mr-2"></i>
+              List View
+            </button>
+          </div>
 
-              <div className="space-y-1">
-                {day.events.map(event => (
-                  <motion.div
-                    key={event.id}
-                    whileHover={{ scale: 1.02 }}
-                    className={`p-1 rounded text-xs cursor-pointer bg-${event.color}-100 text-${event.color}-800`}
-                    onClick={() => {
-                      setSelectedEvent(event);
-                      setShowEventModal(true);
-                    }}
-                  >
-                    <i className={`${eventTypes[event.type].icon} mr-1`}></i>
-                    {event.title}
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          ))}
+          {/* Month Selection */}
+          <div className="flex gap-4">
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+              className="input"
+            >
+              {months.map((month, index) => (
+                <option key={month} value={index}>{month}</option>
+              ))}
+            </select>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              className="input"
+            >
+              {[2023, 2024, 2025].map((year) => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Event Modal */}
-      <AnimatePresence>
-        {showEventModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className="bg-white rounded-lg p-6 max-w-lg w-full mx-4"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">
-                  {selectedEvent ? 'تعديل الحدث' : 'حدث جديد'}
-                </h2>
-                <button
-                  onClick={() => setShowEventModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
+      {/* Calendar View */}
+      {selectedView === 'calendar' && (
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          {/* Calendar Grid */}
+          <div className="grid grid-cols-7 gap-px bg-gray-200">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+              <div key={day} className="bg-gray-50 p-4 text-center font-medium text-gray-600">
+                {day}
               </div>
+            ))}
+            {calendarDays.map((day, index) => (
+              <div
+                key={index}
+                className={`bg-white p-4 min-h-[120px] ${
+                  day ? 'hover:bg-gray-50' : ''
+                }`}
+              >
+                {day && (
+                  <>
+                    <div className="font-medium text-gray-600 mb-2">{day}</div>
+                    {events
+                      .filter(event => new Date(event.date).getDate() === day)
+                      .map(event => (
+                        <div
+                          key={event.id}
+                          className={`p-2 rounded-lg mb-1 text-xs ${getEventTypeColor(event.type)}`}
+                        >
+                          {event.title}
+                        </div>
+                      ))
+                    }
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                handleEventSubmit({
-                  title: formData.get('title'),
-                  description: formData.get('description'),
-                  date: formData.get('date'),
-                  time: formData.get('time'),
-                  location: formData.get('location'),
-                  type: formData.get('type'),
-                  color: eventTypes[formData.get('type')].color,
-                });
-              }}>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      عنوان الحدث
-                    </label>
-                    <input
-                      type="text"
-                      name="title"
-                      defaultValue={selectedEvent?.title}
-                      required
-                      className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+      {/* List View */}
+      {selectedView === 'list' && (
+        <div className="space-y-6">
+          {events.map((event) => (
+            <div
+              key={event.id}
+              className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300"
+            >
+              <div className="flex flex-col md:flex-row gap-6">
+                {/* Date Box */}
+                <div className="flex flex-col items-center justify-center bg-blue-50 rounded-lg p-4 min-w-[100px]">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {new Date(event.date).getDate()}
                   </div>
-
-                  <div>
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      الوصف
-                    </label>
-                    <textarea
-                      name="description"
-                      defaultValue={selectedEvent?.description}
-                      rows="3"
-                      className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    ></textarea>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-gray-700 font-semibold mb-2">
-                        التاريخ
-                      </label>
-                      <input
-                        type="date"
-                        name="date"
-                        defaultValue={selectedEvent?.date}
-                        required
-                        className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-700 font-semibold mb-2">
-                        الوقت
-                      </label>
-                      <input
-                        type="time"
-                        name="time"
-                        defaultValue={selectedEvent?.time}
-                        required
-                        className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      المكان
-                    </label>
-                    <input
-                      type="text"
-                      name="location"
-                      defaultValue={selectedEvent?.location}
-                      required
-                      className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      نوع الحدث
-                    </label>
-                    <select
-                      name="type"
-                      defaultValue={selectedEvent?.type || 'meeting'}
-                      className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="meeting">اجتماع</option>
-                      <option value="exam">امتحان</option>
-                      <option value="activity">نشاط</option>
-                      <option value="holiday">عطلة</option>
-                    </select>
+                  <div className="text-sm text-blue-600">
+                    {months[new Date(event.date).getMonth()].slice(0, 3)}
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-4 mt-6">
-                  {selectedEvent && (
-                    <button
-                      type="button"
-                      onClick={() => handleEventDelete(selectedEvent.id)}
-                      className="px-6 py-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-50 transition-colors"
-                    >
-                      حذف
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setShowEventModal(false)}
-                    className="px-6 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-                  >
-                    إلغاء
+                {/* Event Details */}
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className={`badge ${getEventTypeColor(event.type)}`}>
+                      {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    {event.title}
+                  </h3>
+
+                  <p className="text-gray-600 mb-4">
+                    {event.description}
+                  </p>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <i className="fas fa-clock mr-2"></i>
+                      {event.time}
+                    </div>
+                    <div className="flex items-center">
+                      <i className="fas fa-map-marker-alt mr-2"></i>
+                      {event.location}
+                    </div>
+                    <div className="flex items-center">
+                      <i className="fas fa-user-tie mr-2"></i>
+                      {event.organizer}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-2 min-w-[120px]">
+                  <button className="btn btn-primary">
+                    <i className="fas fa-calendar-plus mr-2"></i>
+                    Add to Calendar
                   </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
-                  >
-                    {selectedEvent ? 'تحديث' : 'إنشاء'}
+                  <button className="btn btn-secondary">
+                    <i className="fas fa-bell mr-2"></i>
+                    Set Reminder
                   </button>
                 </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+              </div>
+            </div>
+          ))}
+
+          {/* Empty State */}
+          {events.length === 0 && (
+            <div className="text-center py-12">
+              <i className="fas fa-calendar-times text-4xl text-gray-400 mb-4"></i>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                No events found
+              </h3>
+              <p className="text-gray-600">
+                There are no events scheduled for this period
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 
