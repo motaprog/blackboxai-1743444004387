@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { NotificationContext } from '../App';
 
 const EventsPage = () => {
   const [selectedView, setSelectedView] = useState('calendar');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const { showNotification } = useContext(NotificationContext);
 
   // Mock data - In a real app, this would come from an API
   const events = [
@@ -39,6 +41,11 @@ const EventsPage = () => {
     },
   ];
 
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
   const getEventTypeColor = (type) => {
     switch (type) {
       case 'competition':
@@ -52,12 +59,6 @@ const EventsPage = () => {
     }
   };
 
-  const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-
-  // Generate calendar days
   const getDaysInMonth = (month, year) => {
     return new Date(year, month + 1, 0).getDate();
   };
@@ -71,12 +72,10 @@ const EventsPage = () => {
     const firstDay = getFirstDayOfMonth(selectedMonth, selectedYear);
     const days = [];
 
-    // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
       days.push(null);
     }
 
-    // Add days of the month
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(i);
     }
@@ -84,11 +83,19 @@ const EventsPage = () => {
     return days;
   };
 
+  const handleAddToCalendar = (event) => {
+    showNotification(`Added "${event.title}" to your calendar`, 'success');
+  };
+
+  const handleSetReminder = (event) => {
+    showNotification(`Reminder set for "${event.title}"`, 'success');
+  };
+
   const calendarDays = generateCalendarDays();
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Header Section */}
+      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-4">School Events</h1>
         <p className="text-gray-600">
@@ -96,7 +103,7 @@ const EventsPage = () => {
         </p>
       </div>
 
-      {/* View Toggle and Month Selection */}
+      {/* Controls */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
         <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
           {/* View Toggle */}
@@ -125,12 +132,12 @@ const EventsPage = () => {
             </button>
           </div>
 
-          {/* Month Selection */}
+          {/* Month/Year Selection */}
           <div className="flex gap-4">
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className="input"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               {months.map((month, index) => (
                 <option key={month} value={index}>{month}</option>
@@ -139,7 +146,7 @@ const EventsPage = () => {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="input"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               {[2023, 2024, 2025].map((year) => (
                 <option key={year} value={year}>{year}</option>
@@ -152,7 +159,6 @@ const EventsPage = () => {
       {/* Calendar View */}
       {selectedView === 'calendar' && (
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-px bg-gray-200">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
               <div key={day} className="bg-gray-50 p-4 text-center font-medium text-gray-600">
@@ -174,7 +180,8 @@ const EventsPage = () => {
                       .map(event => (
                         <div
                           key={event.id}
-                          className={`p-2 rounded-lg mb-1 text-xs ${getEventTypeColor(event.type)}`}
+                          className={`p-2 rounded-lg mb-1 text-xs cursor-pointer ${getEventTypeColor(event.type)}`}
+                          onClick={() => showNotification(event.description, 'info')}
                         >
                           {event.title}
                         </div>
@@ -210,7 +217,7 @@ const EventsPage = () => {
                 {/* Event Details */}
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
-                    <span className={`badge ${getEventTypeColor(event.type)}`}>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getEventTypeColor(event.type)}`}>
                       {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
                     </span>
                   </div>
@@ -239,13 +246,19 @@ const EventsPage = () => {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
+                {/* Actions */}
                 <div className="flex flex-col gap-2 min-w-[120px]">
-                  <button className="btn btn-primary">
+                  <button
+                    onClick={() => handleAddToCalendar(event)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
                     <i className="fas fa-calendar-plus mr-2"></i>
                     Add to Calendar
                   </button>
-                  <button className="btn btn-secondary">
+                  <button
+                    onClick={() => handleSetReminder(event)}
+                    className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
                     <i className="fas fa-bell mr-2"></i>
                     Set Reminder
                   </button>
@@ -254,7 +267,6 @@ const EventsPage = () => {
             </div>
           ))}
 
-          {/* Empty State */}
           {events.length === 0 && (
             <div className="text-center py-12">
               <i className="fas fa-calendar-times text-4xl text-gray-400 mb-4"></i>
