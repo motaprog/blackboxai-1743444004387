@@ -1,90 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext } from 'react';
+import { NotificationContext } from '../App';
 
-const Notification = ({ message, type = 'info', duration = 3000, onClose }) => {
-  const [isVisible, setIsVisible] = useState(true);
+const Notification = () => {
+  const { notification } = useContext(NotificationContext);
 
-  useEffect(() => {
-    if (duration && isVisible) {
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-        if (onClose) onClose();
-      }, duration);
+  if (!notification) return null;
 
-      return () => clearTimeout(timer);
-    }
-  }, [duration, onClose, isVisible]);
-
-  if (!isVisible) return null;
-
-  const getNotificationStyles = () => {
-    const baseStyles = 'fixed top-4 right-4 z-50 rounded-lg shadow-lg p-4 max-w-md transition-all duration-300 transform translate-x-0';
-    
+  const getNotificationStyles = (type) => {
     switch (type) {
       case 'success':
-        return `${baseStyles} bg-green-100 text-green-800 border-l-4 border-green-500`;
+        return 'bg-green-100 text-green-800 border-green-300';
       case 'error':
-        return `${baseStyles} bg-red-100 text-red-800 border-l-4 border-red-500`;
+        return 'bg-red-100 text-red-800 border-red-300';
       case 'warning':
-        return `${baseStyles} bg-yellow-100 text-yellow-800 border-l-4 border-yellow-500`;
+        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
       default:
-        return `${baseStyles} bg-blue-100 text-blue-800 border-l-4 border-blue-500`;
-    }
-  };
-
-  const getIcon = () => {
-    switch (type) {
-      case 'success':
-        return 'fa-check-circle';
-      case 'error':
-        return 'fa-exclamation-circle';
-      case 'warning':
-        return 'fa-exclamation-triangle';
-      default:
-        return 'fa-info-circle';
+        return 'bg-blue-100 text-blue-800 border-blue-300';
     }
   };
 
   return (
-    <div className={getNotificationStyles()}>
-      <div className="flex items-start">
-        <div className="flex-shrink-0">
-          <i className={`fas ${getIcon()} text-2xl`}></i>
-        </div>
-        <div className="ml-3 flex-1">
-          <p className="text-sm font-medium">{message}</p>
-        </div>
-        <div className="ml-4 flex-shrink-0">
-          <button
-            onClick={() => {
-              setIsVisible(false);
-              if (onClose) onClose();
-            }}
-            className="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
-          >
-            <i className="fas fa-times"></i>
-          </button>
+    <div className="fixed top-4 right-4 z-50">
+      <div
+        className={`px-4 py-3 rounded-lg border ${getNotificationStyles(
+          notification.type
+        )} shadow-lg`}
+      >
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            {notification.type === 'success' && (
+              <i className="fas fa-check-circle mr-2"></i>
+            )}
+            {notification.type === 'error' && (
+              <i className="fas fa-exclamation-circle mr-2"></i>
+            )}
+            {notification.type === 'warning' && (
+              <i className="fas fa-exclamation-triangle mr-2"></i>
+            )}
+            {notification.type === 'info' && (
+              <i className="fas fa-info-circle mr-2"></i>
+            )}
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium">{notification.message}</p>
+          </div>
         </div>
       </div>
-
-      {/* Progress Bar */}
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-200 rounded-b-lg overflow-hidden">
-        <div
-          className="h-full bg-current transition-all duration-300 ease-linear"
-          style={{
-            width: '100%',
-            animation: `shrink ${duration}ms linear forwards`,
-          }}
-        ></div>
-      </div>
-
-      <style>
-        {`
-          @keyframes shrink {
-            from { width: 100%; }
-            to { width: 0%; }
-          }
-        `}
-      </style>
     </div>
   );
 };
