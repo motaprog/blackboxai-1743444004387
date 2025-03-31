@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createContext, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Components
@@ -15,28 +15,40 @@ import MessagingPage from './pages/MessagingPage';
 import EventsPage from './pages/EventsPage';
 import StatisticsPage from './pages/StatisticsPage';
 
-function App() {
-  return (
-    <Router>
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Navbar />
-        <Notification />
-        
-        <main className="flex-grow container mx-auto px-4 py-8">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/lessons" element={<LessonsPage />} />
-            <Route path="/assignments" element={<AssignmentsPage />} />
-            <Route path="/messaging" element={<MessagingPage />} />
-            <Route path="/events" element={<EventsPage />} />
-            <Route path="/statistics" element={<StatisticsPage />} />
-          </Routes>
-        </main>
+// Create NotificationContext
+export const NotificationContext = createContext();
 
-        <Footer />
-      </div>
-    </Router>
+function App() {
+  const [notification, setNotification] = useState(null);
+
+  const showNotification = (message, type = 'info') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  return (
+    <NotificationContext.Provider value={{ notification, showNotification }}>
+      <Router>
+        <div className="min-h-screen flex flex-col bg-gray-50">
+          <Navbar />
+          <Notification />
+          
+          <main className="flex-grow container mx-auto px-4 py-8">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/lessons" element={<LessonsPage />} />
+              <Route path="/assignments" element={<AssignmentsPage />} />
+              <Route path="/messaging" element={<MessagingPage />} />
+              <Route path="/events" element={<EventsPage />} />
+              <Route path="/statistics" element={<StatisticsPage />} />
+            </Routes>
+          </main>
+
+          <Footer />
+        </div>
+      </Router>
+    </NotificationContext.Provider>
   );
 }
 
